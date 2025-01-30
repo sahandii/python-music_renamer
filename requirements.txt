@@ -1,0 +1,11 @@
+click
+musicbrainzngs
+mutagen
+thefuzz
+python-Levenshtein
+tqdm
+inquirer
+colorama
+requests
+spotipy
+python-dotenv 
