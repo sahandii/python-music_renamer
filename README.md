@@ -36,7 +36,6 @@ The following flags can be used to customize the behavior:
 - `--threshold N`: Confidence threshold for automatic matching (0-100, default: 98)
 - `--move`: Move files instead of copying them
 - `--gather`: Place all files directly in the destination directory without organizing into subdirectories
-- `--api spotify`: Use Spotify API for music information (default)
 
 ### Example Usage
 
