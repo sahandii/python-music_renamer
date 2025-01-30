@@ -3,14 +3,12 @@ from pathlib import Path
 import logging
 from tqdm import tqdm
 from colorama import init, Fore, Style
-from apis.musicbrainz_api import MusicBrainzAPI
 from apis.spotify_api import SpotifyAPI
 from utils.file_handling import process_file
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
-logging.getLogger('musicbrainzngs').setLevel(logging.WARNING)
 
 # Initialize colorama
 init()
@@ -27,7 +25,7 @@ init()
 @click.option('--threshold', default=98, help="Confidence threshold for automatic matching (0-100)")
 @click.option('--move', is_flag=True, help="Move files instead of copying them")
 @click.option('--gather', is_flag=True, help="Place all files directly in the destination directory without organizing into subdirectories")
-@click.option('--api', type=click.Choice(['spotify', 'musicbrainz']), default='spotify', 
+@click.option('--api', type=click.Choice(['spotify']), default='spotify', 
               help="API to use for music information")
 def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather, api):
     """Organize music files by analyzing their metadata.
@@ -53,10 +51,7 @@ def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather,
         return
     
     # Initialize the appropriate API
-    if api == 'spotify':
-        music_api = SpotifyAPI()
-    else:
-        music_api = MusicBrainzAPI()
+    music_api = SpotifyAPI()
     
     # Store metadata changes
     metadata_changes = []

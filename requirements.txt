@@ -1,5 +1,4 @@
 click
-musicbrainzngs
 mutagen
 thefuzz
 python-Levenshtein
