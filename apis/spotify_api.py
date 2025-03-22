@@ -20,8 +20,8 @@ class SpotifyAPI(MusicAPI):
         # Initialize Spotify client
         self.sp = spotipy.Spotify(
             client_credentials_manager=SpotifyClientCredentials(
-                client_id=os.getenv('SPOTIPY_CLIENT_ID'),
-                client_secret=os.getenv('SPOTIPY_CLIENT_SECRET')
+                client_id=os.getenv('SPOTIFY_CLIENT_ID'),
+                client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')
             )
         )
     

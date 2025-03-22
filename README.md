@@ -20,6 +20,14 @@ pip install -r requirements.txt
 3. Set up your API keys:
 
 - Create a new application on the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications) and get the `client_id` and `client_secret`.
+- Create a `.env` file in the root directory of the project
+- Add your Spotify API credentials to the `.env` file in the following format:
+  ```
+  SPOTIPY_CLIENT_ID="your_client_id_here"
+  SPOTIPY_CLIENT_SECRET="your_client_secret_here"
+  ```
+- Make sure to replace `your_client_id_here` and `your_client_secret_here` with your actual Spotify API credentials
+- The `.env` file is already included in `.gitignore`, so your credentials will remain secure
 
 4. Run the script:
 
