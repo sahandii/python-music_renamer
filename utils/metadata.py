@@ -2,10 +2,42 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, APIC
 from mutagen.mp4 import MP4, MP4Cover
 import mutagen.id3
+import mutagen
 import logging
 import requests
+import math
 
 logger = logging.getLogger(__name__)
+
+def get_audio_duration(file_path):
+    """Get the duration of an audio file in mm:ss format."""
+    try:
+        suffix = file_path.suffix.lower()
+        if suffix == '.mp3':
+            audio = mutagen.File(file_path)
+            if audio and hasattr(audio, 'info') and hasattr(audio.info, 'length'):
+                seconds = int(audio.info.length)
+                minutes = seconds // 60
+                remaining_seconds = seconds % 60
+                return f"{minutes}:{remaining_seconds:02d}"
+        elif suffix == '.m4a':
+            audio = MP4(file_path)
+            if hasattr(audio, 'info') and hasattr(audio.info, 'length'):
+                seconds = int(audio.info.length)
+                minutes = seconds // 60
+                remaining_seconds = seconds % 60
+                return f"{minutes}:{remaining_seconds:02d}"
+        elif suffix == '.wav':
+            audio = mutagen.File(file_path)
+            if audio and hasattr(audio, 'info') and hasattr(audio.info, 'length'):
+                seconds = int(audio.info.length)
+                minutes = seconds // 60
+                remaining_seconds = seconds % 60
+                return f"{minutes}:{remaining_seconds:02d}"
+        return "Unknown"
+    except Exception as e:
+        logger.error(f"Error getting duration for {file_path}: {str(e)}")
+        return "Unknown"
 
 def get_original_metadata(file_path):
     """Get original metadata from file."""

@@ -27,7 +27,8 @@ init()
 @click.option('--gather', is_flag=True, help="Place all files directly in the destination directory without organizing into subdirectories")
 @click.option('--api', type=click.Choice(['spotify']), default='spotify', 
               help="API to use for music information")
-def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather, api):
+@click.option('--start', default=0, help="Skip the first N files (useful for resuming an interrupted process)")
+def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather, api, start):
     """Organize music files by analyzing their metadata.
 
     Arguments:
@@ -50,6 +51,14 @@ def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather,
         logger.warning(f"No supported audio files found in {source_dir}")
         return
     
+    # Skip files if start parameter is provided
+    if start > 0:
+        if start >= len(audio_files):
+            logger.warning(f"Start value ({start}) exceeds the number of files ({len(audio_files)})")
+            return
+        logger.info(f"Skipping the first {start} files")
+        audio_files = audio_files[start:]
+    
     # Initialize the appropriate API
     music_api = SpotifyAPI()
     
@@ -62,11 +71,26 @@ def main(source_dir, destination_dir, dry_run, workers, threshold, move, gather,
         # Clear the current line before starting
         print("\033[K", end="")
         
-        for file_path in audio_files:
+        # Calculate the total number of files for progress display
+        total_files = len(audio_files) + start
+        
+        for idx, file_path in enumerate(audio_files):
+            # Calculate current file number (accounting for the --start parameter)
+            current_file = idx + 1 + start
+            
             # Move cursor up one line and clear it
             print("\033[F\033[K", end="")
             
-            success, (original, new) = process_file(file_path, destination_dir, dry_run, move, music_api, gather)
+            success, (original, new) = process_file(
+                file_path, 
+                destination_dir, 
+                dry_run, 
+                move, 
+                music_api, 
+                gather, 
+                current_file, 
+                total_files
+            )
             metadata_changes.append((success, original, new))
             
             pbar.update(1)

@@ -4,7 +4,7 @@ class MusicAPI(ABC):
     """Base class for music APIs"""
     
     @abstractmethod
-    def search_track(self, filename):
+    def search_track(self, filename, original_metadata=None, original_filename=None, duration=None, current_file=None, total_files=None):
         """Search for track information"""
         pass
     

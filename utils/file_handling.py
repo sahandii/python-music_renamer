@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import shutil
 import logging
-from .metadata import update_metadata, get_original_metadata
+from .metadata import update_metadata, get_original_metadata, get_audio_duration
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def clean_filename(filename):
     
     return filename.strip()
 
-def process_file(file_path, destination_dir, dry_run, move, api, gather=False):
+def process_file(file_path, destination_dir, dry_run, move, api, gather=False, current_file=None, total_files=None):
     """Process a single file."""
     try:
         logger.info(f"Processing {file_path}")
@@ -38,13 +38,49 @@ def process_file(file_path, destination_dir, dry_run, move, api, gather=False):
         # Get original metadata
         original_metadata = get_original_metadata(file_path)
         
+        # Get audio duration
+        duration = get_audio_duration(file_path)
+        
         # Clean filename for search
         clean_name = clean_filename(file_path.name)
         
-        # Get track information from API
-        track_info = api.search_track(clean_name)
+        # Get track information from API - pass both clean name and original metadata
+        track_info = api.search_track(clean_name, original_metadata, file_path.name, duration, current_file, total_files)
         
-        if track_info:
+        if track_info == "TRANSFER_ONLY":
+            # Special case: Transfer file without changing metadata
+            if gather:
+                dest_dir = Path(destination_dir)
+                dest_file = dest_dir / file_path.name
+            else:
+                # Use original metadata if available, or just the filename
+                if original_metadata and original_metadata != f"Unknown - {Path(file_path).stem} (Unknown Album)":
+                    parts = original_metadata.split(' - ')
+                    artist = parts[0] if len(parts) > 1 else "Unknown"
+                    title_album = parts[1] if len(parts) > 1 else original_metadata
+                    title = title_album.split(' (')[0] if ' (' in title_album else title_album
+                    dest_dir = Path(destination_dir) / sanitize_path(artist)
+                    dest_file = dest_dir / file_path.name
+                else:
+                    # No useful metadata, put in "Unknown" folder
+                    dest_dir = Path(destination_dir) / "Unknown"
+                    dest_file = dest_dir / file_path.name
+            
+            if not dry_run:
+                # Just copy/move the file without updating metadata
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                if move:
+                    shutil.move(str(file_path), str(dest_file))
+                    logger.info(f"Moved {file_path} to {dest_file} (no metadata changes)")
+                else:
+                    shutil.copy2(str(file_path), str(dest_file))
+                    logger.info(f"Copied {file_path} to {dest_file} (no metadata changes)")
+            else:
+                action = "move" if move else "copy"
+                logger.info(f"Would {action} {file_path} to {dest_file} (no metadata changes)")
+            
+            return True, (original_metadata, "No change")
+        elif track_info:
             # Create destination path based on gather flag
             if gather:
                 dest_dir = Path(destination_dir)
